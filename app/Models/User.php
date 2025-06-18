@@ -41,4 +41,23 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Escopo local para aplicar um filtro de busca no nome ou e-mail.
+     *
+     * Permite que a consulta seja filtrada por registros cujo campo `name` ou `email`
+     * contenha o termo de pesquisa informado. A função também faz o escape dos caracteres
+     * `%` e `_` para evitar comportamentos indesejados no LIKE do SQL.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $search  Termo a ser buscado nos campos `name` e `email`
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', '%' . addcslashes($search, '%_') . '%')
+                ->orWhere('email', 'like', '%' . addcslashes($search, '%_') . '%');
+        });
+    }
 }
